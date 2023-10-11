@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>
+		에에에에엥
+	</title>
+	<style type="text/css">
+		*{cursor: none;}
+		body{margin: 0;}
+		.box1{position: absolute; background: url(live.png); width: 93px; height: 93px;}
+		.box2{position: absolute; background: url(dead.png); width: 93px; height: 93px;}
+		.textbox{margin: auto; width: 20vw; text-align: center;}
+		input{border-style: none; width: 3vw;}
+		#customCursor {position: absolute; width: 64px; height: 64px; background-image: url('cursor.png'); background-size: cover;}
+		#popup {position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background-color: #fff; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); z-index: 999; text-align: center;}
+		#popup p {margin: 0;}
+		.hidden {display: none;}
+		.dot{width: 30px; height: 30px; background: red; border-radius: 50%; position: absolute; z-index: 99;}
+		@keyframes fade{to{opacity: 0}}
+	</style>
+
+</head>
+<body>
+	<div id="customCursor"></div>
+	<div class="textbox">
+		<label for="Timer">남은 시간:</label>
+		<input id="Timer" type="text" value="" readonly/>
+	</div>
+	<div class="textbox">
+		<label for="Score">점수:</label>
+		<input id="Score" type="text" value="" readonly/>
+	</div>
+	<audio id="audio" src="whip.wav"></audio>
+
+	<div id="popup" class="hidden">
+    <p>시간 종료! <span id="scoreDisplay">0</span>달성<br><br>팝업 클릭시 새로고침</p>
+	</div>
+
+<script type="text/javascript">
+    const rankData = [
+        { rank: "F", minScore: 0, maxScore: 3 },
+        { rank: "D", minScore: 4, maxScore: 6 },
+        { rank: "C", minScore: 7, maxScore: 9 },
+        { rank: "B", minScore: 10, maxScore: 15 },
+        { rank: "A", minScore: 16, maxScore: 19 },
+        { rank: "S", minScore: 20, maxScore: 24 },
+        { rank: "S+", minScore: 25, maxScore: 999 },
+    ];
+
+    const Timer = document.getElementById('Timer');
+    let time = 15000;
+    let min = 0;
+    let sec = 15;
+    Timer.value = min + ":" + '00';
+
+    let PLAYTIME;
+    
+    function TIMER() {
+        PLAYTIME = setInterval(function () {
+            time = time - 1000;
+            min = time / (60 * 1000);
+            if (sec > 0) {
+                sec = sec - 1;
+                Timer.value = Math.floor(min) + ':' + sec;
+            }
+            if (sec === 0) {
+                sec = 60;
+                Timer.value = Math.floor(min) + ':' + '00'
+            }
+        }, 1000);
+    }
+
+    TIMER();
+    const popup = document.getElementById('popup');
+    popup.addEventListener('click', function () {
+        location.reload();
+    });
+
+    setTimeout(function () {
+        clearInterval(PLAYTIME);
+        popup.classList.remove('hidden');
+        let playerRank = "신입";
+
+        for (const rankInfo of rankData) {
+            if (s >= rankInfo.minScore && s <= rankInfo.maxScore) {
+                playerRank = rankInfo.rank;
+                break;
+            }
+        }
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        scoreDisplay.textContent = `${s}점 (랭크: ${playerRank})`;
+    }, 15000);
+
+    makeBox();
+    var s = 0;
+    const Score = document.getElementById('Score');
+   	document.addEventListener('click', function () {
+    	playSound();
+	});
+	function playSound() {
+	    audio.pause();
+	    audio.currentTime = 0;
+	    audio.play();
+	}
+
+    document.body.onclick = function (e) {
+        if (e.target.classList.contains('box1')) {
+            s = s + 1;
+            Score.value = s;
+            e.target.classList.remove('box1');
+            e.target.classList.add('box2');
+            makeBox();
+        }
+    }
+
+    function makeBox() {
+        var a = document.createElement("div");
+        a.id = "sqaure";
+        a.className = "box1";
+
+        const maxX = window.innerWidth - 93;
+        const maxY = window.innerHeight - 93;
+
+        var b = Math.random() * maxX;
+        var c = Math.random() * maxY;
+
+        a.style.left = b + "px";
+        a.style.top = c + "px";
+        a.onclick = function () {
+            if (a.className === "box1") {
+                a.className = "box2";
+                s = s + 1;
+                Score.value = s;
+                makeBox();
+            }
+        }
+
+        document.body.appendChild(a);
+    }
+
+    window.onclick = function (e) {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dot.style.left = e.clientX + 'px';
+        dot.style.top = e.clientY + 'px';
+        dot.style.animation = 'fade 0.35s forwards';
+
+        dot.addEventListener('animationend', function () {
+            this.remove();
+        });
+
+        document.body.appendChild(dot);
+    }
+
+    window.onmousemove = function (e) {
+        const cursor = document.getElementById('customCursor');
+        const buffer = 10;
+
+        const cursorWidth = cursor.offsetWidth;
+        const cursorHeight = cursor.offsetHeight;
+        const maxX = window.innerWidth - cursorWidth;
+        const maxY = window.innerHeight - cursorHeight;
+
+        const cursorX = e.clientX;
+        const cursorY = e.clientY;
+
+        if (cursorX < buffer) {
+            cursor.style.left = buffer + 'px';
+        } else if (cursorX > maxX - buffer) {
+            cursor.style.left = maxX - buffer + 'px';
+        } else {
+            cursor.style.left = cursorX + 'px';
+        }
+
+        if (cursorY < buffer) {
+            cursor.style.top = buffer + 'px';
+        } else if (cursorY > maxY - buffer) {
+            cursor.style.top = maxY - buffer + 'px';
+        } else {
+            cursor.style.top = cursorY + 'px';
+        }
+    };
+</script>
+
+
+</body>
+</html>
